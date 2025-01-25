@@ -1,0 +1,15 @@
+{
+    "disableGrenadeRadio": true,
+    "disableBotRadio": true,
+    "disablePlayerRadio": true,
+    "disableChatWheel": true,
+    "disablePing": true,
+    "disableRadar": true,
+    "disableFallDmg": true,
+    "disableSvCheats": true,
+    "disableC4": true,
+    "disableBloodAndHS": true,
+    "disableKillfeed_mode": 1,
+    "disableTeammateHeadTag_mode": 2,
+    "disableDeadBodyMode_mode": true
+}
