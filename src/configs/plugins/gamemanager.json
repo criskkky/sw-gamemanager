@@ -9,7 +9,8 @@
     "disableSvCheats": true,
     "disableC4": true,
     "disableBloodAndHS": true,
-    "disableKillfeed_mode": 1,
+    "disableKillfeed_mode": 2,
     "disableTeammateHeadTag_mode": 2,
-    "disableDeadBodyMode_mode": true
+    "disableDeadBody_mode": 3,
+    "disableLegs": true
 }
