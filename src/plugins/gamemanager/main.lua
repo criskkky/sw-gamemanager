@@ -70,7 +70,10 @@ end)
 AddEventHandler("OnUserMessageSend", function(event, um, isreliable)
     local user = GetUserMessage(um)
     local msgid = user:GetMessageID()
-    if (msgid == 400 or msgid == 411) and config:Fetch("gamemanager.disableBloodAndHS") then
+    if (msgid == 411) and config:Fetch("gamemanager.disableBlood") then
+        return EventResult.Stop
+    end
+    if (msgid == 400) and config:Fetch("gamemanager.disableHSSparks") then
         return EventResult.Stop
     end
     return EventResult.Continue
