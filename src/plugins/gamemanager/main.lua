@@ -42,25 +42,23 @@ AddEventHandler("OnPlayerSpawn", function(event)
     local playerid = event:GetInt("userid")
     local player = GetPlayer(playerid)
     if not player then return EventResult.Continue end
-    if not GetCCSGameRules().WarmupPeriod then
-        NextTick(function()
-            local playerPawn = player:CCSPlayerPawn()
-            if not playerPawn:IsValid() then return end
+    NextTick(function()
+        local playerPawn = player:CCSPlayerPawn()
+        if not playerPawn:IsValid() then return end
 
-            local playerModelEntity = CBaseModelEntity(playerPawn)
-            if not playerModelEntity:IsValid() then return end
+        local playerModelEntity = CBaseModelEntity(playerPawn)
+        if not playerModelEntity:IsValid() then return end
 
-            local currentColor = playerModelEntity.Render:__tostring()
-            local expectedColor = config:Fetch("gamemanager.disableLegs")
-                and Color(254, 254, 254, 254)
-                or Color(255, 255, 255, 255)
+        local currentColor = playerModelEntity.Render:__tostring()
+        local expectedColor = config:Fetch("gamemanager.disableLegs")
+        and Color(254, 254, 254, 254)
+        or Color(255, 255, 255, 255)
 
-            if currentColor ~= expectedColor then
-                playerModelEntity.Render = expectedColor
-                StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
-            end
-        end)
-    end
+        if currentColor ~= expectedColor then
+            playerModelEntity.Render = expectedColor
+            StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
+        end
+    end)
     return EventResult.Continue
 end)
 
@@ -140,10 +138,9 @@ AddEventHandler("OnPlayerDeath", function(event)
     -- Disable Dead Body with Fade Out Effect
     if config:Fetch("gamemanager.disableDeadBody_mode") == 3 then
         NextTick(function()
-            local disableLegs = config:Fetch("gamemanager.disableLegs")
-            local baseColor = disableLegs and 254 or 255
-            local duration = 3000   -- Total duration
-            local steps = 30        -- Smoothness
+            local baseColor = config:Fetch("gamemanager.disableLegs") and 254 or 255
+            local duration = GetCCSGameRules().WarmupPeriod and 1000 or 3000
+            local steps = GetCCSGameRules().WarmupPeriod and 10 or 30
             local interval = duration / steps
             local step = 0
 
@@ -153,15 +150,15 @@ AddEventHandler("OnPlayerDeath", function(event)
                     StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
                     return
                 end
-                
+
                 local alpha = math.floor(255 - (255 * (step / steps)))
                 playerModelEntity.Render = Color(baseColor, baseColor, baseColor, alpha)
                 StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
-                
+
                 step = step + 1
                 SetTimeout(interval, fadeOut)
             end
-            
+
             fadeOut()
         end)
     end
