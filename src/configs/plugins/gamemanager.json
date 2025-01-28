@@ -1,7 +1,7 @@
 {
     "disableGrenadeRadio": true,
     "disableBotRadio": true,
-    "disablePlayerRadio": true,
+    "disablePlayerRadioCmds": true,
     "disablePlayerRadioMenu": true,
     "disableChatWheel": true,
     "disablePing": true,

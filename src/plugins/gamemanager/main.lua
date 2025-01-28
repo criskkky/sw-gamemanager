@@ -82,10 +82,6 @@ end)
 AddEventHandler("OnClientCommand", function(event, playerid, command)
     local player = GetPlayer(playerid)
     if not player then return EventResult.Continue end
-    if config:Fetch("gamemanager.disableChatWheel") and command == "playerchatwheel" then
-        event:SetReturn(false) 
-        return EventResult.Handled
-    end
     if config:Fetch("gamemanager.disablePing") and command == "player_ping" then
         event:SetReturn(false) 
         return EventResult.Handled
