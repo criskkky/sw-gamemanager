@@ -95,22 +95,12 @@ end)
 
 AddEventHandler("OnPlayerDeath", function(event)
     local playerid = event:GetInt("userid")
-    local attackerid = event:GetInt("attacker")
     local player = GetPlayer(playerid)
     if not player then return EventResult.Continue end
     local playerPawn = player:CCSPlayerPawn()
     if not playerPawn:IsValid() then return EventResult.Continue end
     local playerModelEntity = CBaseModelEntity(playerPawn)
     if not playerModelEntity:IsValid() then return EventResult.Continue end
-
-    if config:Fetch("gamemanager.disableKillfeed_mode") == 1 then
-        event:SetReturn(false)
-        return EventResult.Handled
-    end
-    if config:Fetch("gamemanager.disableKillfeed_mode") == 2 and playerid == attackerid then
-        event:FireEventToClient(attackerid)
-        return EventResult.Handled
-    end
 
     -- Disable Dead Body
     if config:Fetch("gamemanager.disableDeadBody_mode") == 1 then
@@ -172,5 +162,14 @@ AddEventHandler("OnPlayerDeath", function(event)
             fadeOut()
         end)
     end
+    return EventResult.Continue
+end)
+
+AddEventHandler("OnPlayerDeath", function(event)
+    if config:Fetch("gamemanager.disableKillfeed_mode") == 1 then
+        event:SetReturn(false)
+        return EventResult.Handled
+    end
+    -- More modes will be added in the future (maybe, idk)
     return EventResult.Continue
 end)

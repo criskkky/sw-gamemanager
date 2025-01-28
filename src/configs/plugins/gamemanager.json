@@ -2,6 +2,7 @@
     "disableGrenadeRadio": true,
     "disableBotRadio": true,
     "disablePlayerRadio": true,
+    "disablePlayerRadioMenu": true,
     "disableChatWheel": true,
     "disablePing": true,
     "disableRadar": true,
@@ -10,7 +11,7 @@
     "disableC4": true,
     "disableBlood": true,
     "disableHSSparks": true,
-    "disableKillfeed_mode": 2,
+    "disableKillfeed_mode": 1,
     "disableTeammateHeadTag_mode": 2,
     "disableDeadBody_mode": 3,
     "disableLegs": true
