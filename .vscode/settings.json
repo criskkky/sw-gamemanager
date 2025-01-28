@@ -1,10 +1,12 @@
 {
 	"conventionalCommits.scopes": [
-		"workflow",
 		"README.md",
+		".vscode",
+		"workflow",
 		"plugin",
 		"translation",
-		"project"
+		"config",
+		"src"
 	],
 	"conventionalCommits.gitmoji": false,
 	"Lua.diagnostics.disable": [
