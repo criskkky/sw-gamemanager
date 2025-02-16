@@ -60,6 +60,8 @@ AddEventHandler("OnPlayerSpawn", function(event)
             a = tonumber(a)
         }
 
+        if not currentColor then return end
+
         local expectedColor = config:Fetch("gamemanager.disableLegs")
         and Color(currentColor.r, currentColor.g, currentColor.b, 254)
         or Color(currentColor.r, currentColor.g, currentColor.b, 255)
@@ -93,7 +95,7 @@ AddEventHandler("OnClientCommand", function(event, playerid, command)
     local player = GetPlayer(playerid)
     if not player then return EventResult.Continue end
     if config:Fetch("gamemanager.disablePing") and command == "player_ping" then
-        event:SetReturn(false) 
+        event:SetReturn(false)
         return EventResult.Handled
     end
     return EventResult.Continue
@@ -108,15 +110,29 @@ AddEventHandler("OnPlayerDeath", function(event)
     local playerModelEntity = CBaseModelEntity(playerPawn)
     if not playerModelEntity:IsValid() then return EventResult.Continue end
 
+    local function getCurrentColor()
+        local colorString = playerModelEntity.Render:__tostring()
+        local r, g, b, a = colorString:match("Color%((%d+),(%d+),(%d+),(%d+)%)")
+        if not r or not g or not b or not a then return end
+        return {
+            r = tonumber(r),
+            g = tonumber(g),
+            b = tonumber(b),
+            a = tonumber(a)
+        }
+    end
+
     -- Disable Dead Body
     if config:Fetch("gamemanager.disableDeadBody_mode") == 1 then
         NextTick(function()
             if config:Fetch("gamemanager.disableLegs") then
-                playerModelEntity.Render = Color(254, 254, 254, 0)
-            else
-                playerModelEntity.Render = Color(255, 255, 255, 0)
+                local currentColor = getCurrentColor()
+                if not currentColor then return end
+                if currentColor.a ~= 0 then
+                    playerModelEntity.Render = Color(currentColor.r, currentColor.g, currentColor.b, 0)
+                    StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
+                end
             end
-            StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
         end)
     end
 
@@ -124,13 +140,16 @@ AddEventHandler("OnPlayerDeath", function(event)
     if config:Fetch("gamemanager.disableDeadBody_mode") == 2 then
         NextTick(function()
             local deathanim = convar:Get("spec_freeze_deathanim_time") * 1000  -- Eg: 0.8s → 800ms
-            
+
             local duration = deathanim
-            
+
             SetTimeout(duration, function()
-                local baseColor = config:Fetch("gamemanager.disableLegs") and 254 or 255
-                playerModelEntity.Render = Color(baseColor, baseColor, baseColor, 0)
-                StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
+                local currentColor = getCurrentColor()
+                if not currentColor then return end
+                if currentColor.a ~= 0 then
+                    playerModelEntity.Render = Color(currentColor.r, currentColor.g, currentColor.b, 0)
+                    StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
+                end
             end)
         end)
     end
@@ -138,33 +157,34 @@ AddEventHandler("OnPlayerDeath", function(event)
     -- Disable Dead Body with Fade Out Effect (ngl this is my favorite --> criskkky)
     if config:Fetch("gamemanager.disableDeadBody_mode") == 3 then
         NextTick(function()
-            local baseColor = config:Fetch("gamemanager.disableLegs") and 254 or 255
-            
+            local baseColor = getCurrentColor()
+            if not baseColor then return end
+
             local deathanim = convar:Get("spec_freeze_deathanim_time") * 1000  -- Eg: 0.8s → 800ms
-            
+
             local duration = deathanim
-            
+
             local interval = 100 -- Step each 100ms
             local steps = math.ceil(duration / interval)  -- 900ms / 100ms = 9 steps
-            
+
             local step = 0
-    
+
             local function fadeOut()
                 if step >= steps then
-                    playerModelEntity.Render = Color(baseColor, baseColor, baseColor, 0)
+                    playerModelEntity.Render = Color(baseColor.r, baseColor.g, baseColor.b, 0)
                     StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
                     return
                 end
-    
+
                 -- Alpha decrease from 255 to 0 in X steps
                 local alpha = math.floor(255 - (255 * (step / steps)))
-                playerModelEntity.Render = Color(baseColor, baseColor, baseColor, alpha)
+                playerModelEntity.Render = Color(baseColor.r, baseColor.g, baseColor.b, alpha)
                 StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
-    
+
                 step = step + 1
                 SetTimeout(interval, fadeOut)
             end
-    
+
             fadeOut()
         end)
     end
