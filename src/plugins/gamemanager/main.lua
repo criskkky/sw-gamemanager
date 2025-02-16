@@ -49,12 +49,22 @@ AddEventHandler("OnPlayerSpawn", function(event)
         local playerModelEntity = CBaseModelEntity(playerPawn)
         if not playerModelEntity:IsValid() then return end
 
-        local currentColor = playerModelEntity.Render:__tostring()
-        local expectedColor = config:Fetch("gamemanager.disableLegs")
-        and Color(254, 254, 254, 254)
-        or Color(255, 255, 255, 255)
+        local colorString = playerModelEntity.Render:__tostring()
+        local r, g, b, a = colorString:match("Color%((%d+),(%d+),(%d+),(%d+)%)")
+        if not r or not g or not b or not a then return end
 
-        if currentColor ~= expectedColor then
+        local currentColor = {
+            r = tonumber(r),
+            g = tonumber(g),
+            b = tonumber(b),
+            a = tonumber(a)
+        }
+
+        local expectedColor = config:Fetch("gamemanager.disableLegs")
+        and Color(currentColor.r, currentColor.g, currentColor.b, 254)
+        or Color(currentColor.r, currentColor.g, currentColor.b, 255)
+
+        if currentColor.r ~= expectedColor.r or currentColor.g ~= expectedColor.g or currentColor.b ~= expectedColor.b or currentColor.a ~= expectedColor.a then
             playerModelEntity.Render = expectedColor
             StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
         end
