@@ -1,136 +1,64 @@
-function ExecuteCommands()
-    if config:Fetch("gamemanager.disableGrenadeRadio") then
-        server:Execute("sv_ignoregrenaderadio true")
-    end
-
-    if config:Fetch("gamemanager.disableBotRadio") then
-        server:Execute("bot_chatter off")
-    end
-
-    if config:Fetch("gamemanager.disableRadar") then
-        server:Execute("sv_disable_radar 1")
-    end
-
-    if config:Fetch("gamemanager.disableFallDmg") then
-        server:Execute("sv_falldamage_scale 0")
-    end
-
-    if config:Fetch("gamemanager.disableSvCheats") then
-        server:Execute("sv_cheats 0")
-    end
-
-    if config:Fetch("gamemanager.disableC4") then
-        server:Execute("mp_give_player_c4 0")
-    end
-
-    if config:Fetch("gamemanager.disableTeammateHeadTag_mode") == 1 then
-        server:Execute("sv_teamid_overhead 1; sv_teamid_overhead_always_prohibit 1")
-    end
-
-    if config:Fetch("gamemanager.disableTeammateHeadTag_mode") == 2 then
-        server:Execute("sv_teamid_overhead 0")
-    end
-
-end
-
-AddEventHandler("OnPluginStart", function(event)
-    ExecuteCommands()
-    return EventResult.Continue
-end)
-
-AddEventHandler("OnPlayerSpawn", function(event)
-    local playerid = event:GetInt("userid")
-    local player = GetPlayer(playerid)
-    if not player then return EventResult.Continue end
+AddEventHandler("OnPlayerSpawn", function(p_Event)
+    local l_PlayerID = p_Event:GetInt("userid")
+    local l_Player = GetPlayer(l_PlayerID)
+    if not l_Player then return EventResult.Continue end
     NextTick(function()
-        local playerPawn = player:CCSPlayerPawn()
-        if not playerPawn:IsValid() then return end
+        local l_PlayerPawn = l_Player:CCSPlayerPawn()
+        if not l_PlayerPawn:IsValid() then return end
 
-        local playerModelEntity = CBaseModelEntity(playerPawn)
-        if not playerModelEntity:IsValid() then return end
+        local l_PlayerModelEntity = CBaseModelEntity(l_PlayerPawn)
+        if not l_PlayerModelEntity:IsValid() then return end
 
-        local colorString = playerModelEntity.Render:__tostring()
-        local r, g, b, a = colorString:match("Color%((%d+),(%d+),(%d+),(%d+)%)")
-        if not r or not g or not b or not a then return end
+        local l_ExpectedColor = config:Fetch("gamemanager.disableLegs")
+        and Color(l_PlayerModelEntity.Render.r, l_PlayerModelEntity.Render.g, l_PlayerModelEntity.Render.b, 254)
+        or Color(l_PlayerModelEntity.Render.r, l_PlayerModelEntity.Render.g, l_PlayerModelEntity.Render.b, 255)
 
-        local currentColor = {
-            r = tonumber(r),
-            g = tonumber(g),
-            b = tonumber(b),
-            a = tonumber(a)
-        }
-
-        if not currentColor then return end
-
-        local expectedColor = config:Fetch("gamemanager.disableLegs")
-        and Color(currentColor.r, currentColor.g, currentColor.b, 254)
-        or Color(currentColor.r, currentColor.g, currentColor.b, 255)
-
-        if currentColor.r ~= expectedColor.r or currentColor.g ~= expectedColor.g or currentColor.b ~= expectedColor.b or currentColor.a ~= expectedColor.a then
-            playerModelEntity.Render = expectedColor
-            StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
+        if l_PlayerModelEntity.Render.r ~= l_ExpectedColor.r or l_PlayerModelEntity.Render.g ~= l_ExpectedColor.g or l_PlayerModelEntity.Render.b ~= l_ExpectedColor.b or l_PlayerModelEntity.Render.a ~= l_ExpectedColor.a then
+            l_PlayerModelEntity.Render = l_ExpectedColor
+            StateUpdate(l_PlayerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
         end
     end)
     return EventResult.Continue
 end)
 
-AddEventHandler("OnRoundStart", function()
-    ExecuteCommands()
-    return EventResult.Continue
-end)
-
-AddEventHandler("OnUserMessageSend", function(event, um, isreliable)
-    local user = GetUserMessage(um)
-    local msgid = user:GetMessageID()
-    if (msgid == 411) and config:Fetch("gamemanager.disableBlood") then
+AddEventHandler("OnUserMessageSend", function(p_Event, p_UserMessage, p_IsReliable)
+    local l_User = GetUserMessage(p_UserMessage)
+    local l_MsgID = l_User:GetMessageID()
+    if (l_MsgID == 411) and config:Fetch("gamemanager.disableBlood") then
         return EventResult.Stop
     end
-    if (msgid == 400) and config:Fetch("gamemanager.disableHSSparks") then
+    if (l_MsgID == 400) and config:Fetch("gamemanager.disableHSSparks") then
         return EventResult.Stop
     end
     return EventResult.Continue
 end)
 
-AddEventHandler("OnClientCommand", function(event, playerid, command)
-    local player = GetPlayer(playerid)
-    if not player then return EventResult.Continue end
+AddEventHandler("OnClientCommand", function(p_Event, l_PlayerID, command)
+    local l_Player = GetPlayer(l_PlayerID)
+    if not l_Player then return EventResult.Continue end
     if config:Fetch("gamemanager.disablePing") and command == "player_ping" then
-        event:SetReturn(false)
+        p_Event:SetReturn(false)
         return EventResult.Handled
     end
     return EventResult.Continue
 end)
 
-AddEventHandler("OnPlayerDeath", function(event)
-    local playerid = event:GetInt("userid")
-    local player = GetPlayer(playerid)
-    if not player then return EventResult.Continue end
-    local playerPawn = player:CCSPlayerPawn()
-    if not playerPawn:IsValid() then return EventResult.Continue end
-    local playerModelEntity = CBaseModelEntity(playerPawn)
-    if not playerModelEntity:IsValid() then return EventResult.Continue end
-
-    local function getCurrentColor()
-        local colorString = playerModelEntity.Render:__tostring()
-        local r, g, b, a = colorString:match("Color%((%d+),(%d+),(%d+),(%d+)%)")
-        if not r or not g or not b or not a then return end
-        return {
-            r = tonumber(r),
-            g = tonumber(g),
-            b = tonumber(b),
-            a = tonumber(a)
-        }
-    end
+AddEventHandler("OnPlayerDeath", function(p_Event)
+    local l_PlayerID = p_Event:GetInt("userid")
+    local l_Player = GetPlayer(l_PlayerID)
+    if not l_Player then return EventResult.Continue end
+    local l_PlayerPawn = l_Player:CCSPlayerPawn()
+    if not l_PlayerPawn:IsValid() then return EventResult.Continue end
+    local l_PlayerModelEntity = CBaseModelEntity(l_PlayerPawn)
+    if not l_PlayerModelEntity:IsValid() then return EventResult.Continue end
 
     -- Disable Dead Body
     if config:Fetch("gamemanager.disableDeadBody_mode") == 1 then
         NextTick(function()
             if config:Fetch("gamemanager.disableLegs") then
-                local currentColor = getCurrentColor()
-                if not currentColor then return end
-                if currentColor.a ~= 0 then
-                    playerModelEntity.Render = Color(currentColor.r, currentColor.g, currentColor.b, 0)
-                    StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
+                if l_PlayerModelEntity.Render.a ~= 0 then
+                    l_PlayerModelEntity.Render = Color(l_PlayerModelEntity.Render.r, l_PlayerModelEntity.Render.g, l_PlayerModelEntity.Render.b, 0)
+                    StateUpdate(l_PlayerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
                 end
             end
         end)
@@ -139,61 +67,56 @@ AddEventHandler("OnPlayerDeath", function(event)
     -- Disable Dead Body After X Seconds (using spec_freeze_deathanim_time)
     if config:Fetch("gamemanager.disableDeadBody_mode") == 2 then
         NextTick(function()
-            local deathanim = convar:Get("spec_freeze_deathanim_time") * 1000  -- Eg: 0.8s → 800ms
+            local l_DeathAnim = convar:Get("spec_freeze_deathanim_time") * 1000  -- Eg: 0.8s → 800ms
 
-            local duration = deathanim
+            local l_Duration = l_DeathAnim
 
-            SetTimeout(duration, function()
-                local currentColor = getCurrentColor()
-                if not currentColor then return end
-                if currentColor.a ~= 0 then
-                    playerModelEntity.Render = Color(currentColor.r, currentColor.g, currentColor.b, 0)
-                    StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
+            SetTimeout(l_Duration, function()
+                if l_PlayerModelEntity.Render.a ~= 0 then
+                    l_PlayerModelEntity.Render = Color(l_PlayerModelEntity.Render.r, l_PlayerModelEntity.Render.g, l_PlayerModelEntity.Render.b, 0)
+                    StateUpdate(l_PlayerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
                 end
             end)
         end)
     end
 
-    -- Disable Dead Body with Fade Out Effect (ngl this is my favorite --> criskkky)
+    -- Disable Dead Body with Fade Out Effect (ngl this is my favorite ~ criskkky)
     if config:Fetch("gamemanager.disableDeadBody_mode") == 3 then
         NextTick(function()
-            local baseColor = getCurrentColor()
-            if not baseColor then return end
+            local l_DeathAnim = convar:Get("spec_freeze_deathanim_time") * 1000  -- Eg: 0.8s → 800ms
 
-            local deathanim = convar:Get("spec_freeze_deathanim_time") * 1000  -- Eg: 0.8s → 800ms
+            local l_Duration = l_DeathAnim
 
-            local duration = deathanim
+            local l_Interval = 100 -- Step each 100ms
+            local l_Steps = math.ceil(l_Duration / l_Interval)  -- 900ms / 100ms = 9 l_Steps
 
-            local interval = 100 -- Step each 100ms
-            local steps = math.ceil(duration / interval)  -- 900ms / 100ms = 9 steps
+            local l_Step = 0
 
-            local step = 0
-
-            local function fadeOut()
-                if step >= steps then
-                    playerModelEntity.Render = Color(baseColor.r, baseColor.g, baseColor.b, 0)
-                    StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
+            local function l_fadeOut()
+                if l_Step >= l_Steps then
+                    l_PlayerModelEntity.Render = Color(l_PlayerModelEntity.Render.r, l_PlayerModelEntity.Render.g, l_PlayerModelEntity.Render.b, 0)
+                    StateUpdate(l_PlayerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
                     return
                 end
 
-                -- Alpha decrease from 255 to 0 in X steps
-                local alpha = math.floor(255 - (255 * (step / steps)))
-                playerModelEntity.Render = Color(baseColor.r, baseColor.g, baseColor.b, alpha)
-                StateUpdate(playerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
+                -- Alpha decrease from 255 to 0 in X l_Steps
+                local l_Alpha = math.floor(255 - (255 * (l_Step / l_Steps)))
+                l_PlayerModelEntity.Render = Color(l_PlayerModelEntity.Render.r, l_PlayerModelEntity.Render.g, l_PlayerModelEntity.Render.b, l_Alpha)
+                StateUpdate(l_PlayerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
 
-                step = step + 1
-                SetTimeout(interval, fadeOut)
+                l_Step = l_Step + 1
+                SetTimeout(l_Interval, l_fadeOut)
             end
 
-            fadeOut()
+            l_fadeOut()
         end)
     end
     return EventResult.Continue
 end)
 
-AddEventHandler("OnPlayerDeath", function(event)
+AddEventHandler("OnPlayerDeath", function(p_Event)
     if config:Fetch("gamemanager.disableKillfeed_mode") == 1 then
-        event:SetReturn(false)
+        p_Event:SetReturn(false)
         return EventResult.Handled
     end
     -- More modes will be added in the future (maybe, idk)

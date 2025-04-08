@@ -13,6 +13,7 @@
 		"undefined-field",
 		"param-type-mismatch",
 		"redundant-parameter",
-		"missing-parameter"
+		"missing-parameter",
+		"lowercase-global"
 	],
 }
