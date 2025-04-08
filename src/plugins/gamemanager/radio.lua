@@ -1,4 +1,4 @@
-local radioCommands = {
+local l_RadioCmds = {
     "coverme",
     "takepoint",
     "holdpos",
@@ -30,33 +30,33 @@ local radioCommands = {
     "deathcry"
 }
 
-local radioMenu = {
+local l_RadioMenu = {
     "radio",
     "radio1",
     "radio2",
     "radio3"
 }
 
-local radialradio = {
+local l_RadialRadio = {
     "+radialradio",
     "+radialradio1",
     "+radialradio2",
     "+radialradio3"
 }
 
-AddEventHandler("OnClientCommand", function(event, playerid, command)
-    local player = GetPlayer(playerid)
-    if not player then return EventResult.Continue end
-    if config:Fetch("gamemanager.disablePlayerRadioCmds") and table.find(radioCommands, command) then
-        event:SetReturn(false) 
+AddEventHandler("OnClientCommand", function(p_Event, p_PlayerID, p_Cmd)
+    local l_Player = GetPlayer(p_PlayerID)
+    if not l_Player then return EventResult.Continue end
+    if config:Fetch("gamemanager.disablePlayerRadioCmds") and table.find(l_RadioCmds, p_Cmd) then
+        p_Event:SetReturn(false) 
         return EventResult.Handled
     end
-    if config:Fetch("gamemanager.disableRadioMenu") and table.find(radioMenu, command) then
-        event:SetReturn(false) 
+    if config:Fetch("gamemanager.disableRadioMenu") and table.find(l_RadioMenu, p_Cmd) then
+        p_Event:SetReturn(false) 
         return EventResult.Handled
     end
-    if config:Fetch("gamemanager.disableChatWheel") and table.find(radialradio, command) then
-        event:SetReturn(false) 
+    if config:Fetch("gamemanager.disableChatWheel") and table.find(l_RadialRadio, p_Cmd) then
+        p_Event:SetReturn(false) 
         return EventResult.Handled
     end
     return EventResult.Continue
