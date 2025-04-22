@@ -33,10 +33,10 @@ AddEventHandler("OnUserMessageSend", function(p_Event, p_UserMessage, p_IsReliab
     return EventResult.Continue
 end)
 
-AddEventHandler("OnClientCommand", function(p_Event, l_PlayerID, command)
-    local l_Player = GetPlayer(l_PlayerID)
+AddEventHandler("OnClientCommand", function(p_Event, p_PlayerID, p_Command)
+    local l_Player = GetPlayer(p_PlayerID)
     if not l_Player then return EventResult.Continue end
-    if config:Fetch("gamemanager.disablePing") and command == "player_ping" then
+    if config:Fetch("gamemanager.disablePing") and p_Command == "player_ping" then
         p_Event:SetReturn(false)
         return EventResult.Handled
     end

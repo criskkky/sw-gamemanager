@@ -44,18 +44,18 @@ local l_RadialRadio = {
     "+radialradio3"
 }
 
-AddEventHandler("OnClientCommand", function(p_Event, p_PlayerID, p_Cmd)
+AddEventHandler("OnClientCommand", function(p_Event, p_PlayerID, p_Command)
     local l_Player = GetPlayer(p_PlayerID)
     if not l_Player then return EventResult.Continue end
-    if config:Fetch("gamemanager.disablePlayerRadioCmds") and table.find(l_RadioCmds, p_Cmd) then
+    if config:Fetch("gamemanager.disablePlayerRadioCmds") and table.find(l_RadioCmds, p_Command) then
         p_Event:SetReturn(false) 
         return EventResult.Handled
     end
-    if config:Fetch("gamemanager.disableRadioMenu") and table.find(l_RadioMenu, p_Cmd) then
+    if config:Fetch("gamemanager.disableRadioMenu") and table.find(l_RadioMenu, p_Command) then
         p_Event:SetReturn(false) 
         return EventResult.Handled
     end
-    if config:Fetch("gamemanager.disableChatWheel") and table.find(l_RadialRadio, p_Cmd) then
+    if config:Fetch("gamemanager.disableChatWheel") and table.find(l_RadialRadio, p_Command) then
         p_Event:SetReturn(false) 
         return EventResult.Handled
     end
