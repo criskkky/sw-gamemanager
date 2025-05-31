@@ -91,8 +91,19 @@ AddEventHandler("OnPlayerDeath", function(p_Event)
             local l_Steps = math.ceil(l_Duration / l_Interval)  -- 900ms / 100ms = 9 l_Steps
 
             local l_Step = 0
+            local l_Interrupted = false
 
             local function l_fadeOut()
+                if l_Interrupted then
+                    return
+                end
+
+                local l_PlayerPawnChecker = l_Player:CCSPlayerPawn()
+                if not l_PlayerPawnChecker or not l_PlayerPawnChecker:IsValid() then
+                    l_Interrupted = true
+                    return
+                end
+
                 if l_Step >= l_Steps then
                     l_PlayerModelEntity.Render = Color(l_PlayerModelEntity.Render.r, l_PlayerModelEntity.Render.g, l_PlayerModelEntity.Render.b, 0)
                     StateUpdate(l_PlayerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
@@ -105,6 +116,7 @@ AddEventHandler("OnPlayerDeath", function(p_Event)
                 StateUpdate(l_PlayerPawn:ToPtr(), "CBaseModelEntity", "m_clrRender")
 
                 l_Step = l_Step + 1
+
                 SetTimeout(l_Interval, l_fadeOut)
             end
 
